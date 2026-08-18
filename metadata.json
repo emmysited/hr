@@ -1,0 +1,6 @@
+{
+  "name": "Candidate Assessment & Simulation Portal",
+  "description": "A multi-step job candidate application and real-time simulation task assessment platform with automated scoring breakdown.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
