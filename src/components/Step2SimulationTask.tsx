@@ -16,7 +16,7 @@ import {
 import { SimulationTaskData, CareerPath } from '../types';
 
 interface Step2SimulationTaskProps {
-  careerPath: CareerPath;
+  careerPath: CareerPath | string;
   applicationId: string;
   candidateName: string;
   simulationTask: SimulationTaskData;
@@ -86,7 +86,9 @@ export const Step2SimulationTask: React.FC<Step2SimulationTaskProps> = ({
   errorMessage,
   onClearError,
 }) => {
-  const isDataAnalytics = careerPath === 'Data Analytics';
+  // Ensure careerPath is never undefined
+  const selectedPath = (careerPath || 'Data Analytics').toString().trim();
+  const isDataAnalytics = selectedPath === 'Data Analytics';
 
   // 20 minutes countdown timer (1200 seconds)
   const initialSeconds = 20 * 60;
@@ -261,11 +263,6 @@ export const Step2SimulationTask: React.FC<Step2SimulationTaskProps> = ({
     };
   }, [textResponse]);
 
-  const taskTitle =
-    simulationTask.task_title ||
-    simulationTask.title ||
-    `${careerPath} Simulation Assessment`;
-
   const taskPrompt =
     simulationTask.task_prompt ||
     simulationTask.prompt ||
@@ -320,10 +317,10 @@ export const Step2SimulationTask: React.FC<Step2SimulationTaskProps> = ({
         <div>
           <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1B3A6B] bg-blue-50 px-2.5 py-1 rounded-full mb-1.5 border border-blue-100">
             {isDataAnalytics ? <TableIcon className="w-3.5 h-3.5" /> : <FileText className="w-3.5 h-3.5" />}
-            <span>{careerPath} Simulation</span>
+            <span>{selectedPath} Simulation</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight">
-            {isDataAnalytics ? 'Data Cleaning Task' : taskTitle}
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#111827] tracking-tight" id="step2-title">
+            {selectedPath} Simulation Assessment
           </h2>
           <p className="text-sm font-medium text-[#1B3A6B] mt-0.5">
             {isDataAnalytics

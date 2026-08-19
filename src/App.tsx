@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { ApplicationFormData, SimulationTaskData, ScoreSubmissionResponse, Step } from './types';
+import {
+  ApplicationFormData,
+  SimulationTaskData,
+  ScoreSubmissionResponse,
+  Step,
+  careerPathMap,
+  CareerPath,
+} from './types';
 import { applyCandidate, submitSimulation, scoreSubmission } from './api';
 import { StepProgressBar } from './components/StepProgressBar';
 import { Step1ApplicationForm } from './components/Step1ApplicationForm';
@@ -13,6 +20,7 @@ const initialFormValues: ApplicationFormData = {
   email: '',
   phone: '',
   education: 'Degree',
+  careerPath: 'Data Analytics',
   experienceYears: 5,
   location: '',
 };
@@ -20,6 +28,7 @@ const initialFormValues: ApplicationFormData = {
 export default function App() {
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [formData, setFormData] = useState<ApplicationFormData>(initialFormValues);
+  const [selectedCareerPath, setSelectedCareerPath] = useState<CareerPath>('Data Analytics');
 
   // Qualification status
   const [isRejected, setIsRejected] = useState<boolean>(false);
@@ -40,10 +49,16 @@ export default function App() {
   const handleApplyCandidate = async (submittedFormData: ApplicationFormData) => {
     setIsLoading(true);
     setErrorMessage(null);
-    setFormData(submittedFormData);
+
+    const chosenCareerPath: CareerPath = submittedFormData.careerPath || 'Data Analytics';
+    setSelectedCareerPath(chosenCareerPath);
+    setFormData({ ...submittedFormData, careerPath: chosenCareerPath });
 
     try {
-      const response = await applyCandidate(submittedFormData);
+      const response = await applyCandidate({
+        ...submittedFormData,
+        careerPath: chosenCareerPath,
+      });
 
       if (!response.passed_qualification_filter) {
         setIsRejected(true);
@@ -58,10 +73,10 @@ export default function App() {
         setApplicationId(appId);
 
         const task: SimulationTaskData = response.simulation_task || {
-          task_title: 'Crisis Management Scenario',
+          task_title: `${chosenCareerPath} Simulation Assessment`,
           task_prompt:
-            'A critical server has gone down during a high-traffic release window. Your lead engineer is unavailable. Detail the specific steps you would take to coordinate the response, communicate with stakeholders, and ensure a resolution.',
-          time_limit_minutes: 15,
+            'Review the workplace scenario and deliver a thorough, high-impact solution meeting company standards.',
+          time_limit_minutes: 20,
         };
 
         setSimulationTask(task);
@@ -96,7 +111,8 @@ export default function App() {
       setCurrentStep(3);
 
       try {
-        localStorage.removeItem(`draft_${applicationId}`);
+        localStorage.removeItem(`cleaning_data_${applicationId}`);
+        localStorage.removeItem(`text_response_${applicationId}`);
       } catch {
         // ignore
       }
@@ -120,6 +136,7 @@ export default function App() {
     setSubmissionId('');
     setScoreData(null);
     setErrorMessage(null);
+    setSelectedCareerPath('Data Analytics');
     setFormData(initialFormValues);
   };
 
@@ -128,6 +145,9 @@ export default function App() {
     setIsRejected(false);
     setCurrentStep(1);
   };
+
+  const activePath = selectedCareerPath || formData.careerPath || 'Data Analytics';
+  const currentJobRoleId = careerPathMap[activePath] || careerPathMap['Data Analytics'];
 
   return (
     <div className="min-h-screen w-full bg-[#f9fafb] flex flex-col md:flex-row font-sans text-[#111827]">
@@ -159,8 +179,8 @@ export default function App() {
 
         {/* Sidebar Footer Metadata */}
         <div className="pt-6 border-t border-white/15 text-xs text-white/70 space-y-1">
-          <p className="font-semibold text-white/90">Senior Technical Project Manager</p>
-          <p className="font-mono text-[11px] text-white/50">ID: ad0c9791-a54a-4544-ba9c-3b593112ee36</p>
+          <p className="font-semibold text-white/90">{activePath} Track</p>
+          <p className="font-mono text-[11px] text-white/50">ID: {currentJobRoleId}</p>
           <div className="flex items-center gap-1 text-[11px] text-emerald-300 pt-1">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Active Assessment Session</span>
@@ -206,6 +226,7 @@ export default function App() {
 
               {currentStep === 2 && simulationTask && (
                 <Step2SimulationTask
+                  careerPath={activePath}
                   applicationId={applicationId}
                   candidateName={formData.fullName || 'Candidate'}
                   simulationTask={simulationTask}
