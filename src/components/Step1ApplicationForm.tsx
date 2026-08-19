@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Loader2, ArrowRight } from 'lucide-react';
-import { ApplicationFormData, EducationLevel } from '../types';
+import { ApplicationFormData, EducationLevel, CareerPath } from '../types';
 
 interface Step1ApplicationFormProps {
   initialData: ApplicationFormData;
@@ -15,6 +15,24 @@ const EDUCATION_OPTIONS: { value: EducationLevel; label: string }[] = [
   { value: 'Masters', label: 'Masters' },
   { value: 'Diploma', label: 'Diploma' },
   { value: 'Certificate', label: 'Certificate' },
+];
+
+const CAREER_PATH_OPTIONS: CareerPath[] = [
+  'Data Analytics',
+  'Sales',
+  'Customer Support',
+  'Accounting',
+  'Inventory & Logistics',
+  'Human Resources',
+  'Marketing',
+  'Procurement',
+  'Administration',
+  'ICT Support',
+  'Finance',
+  'Project Management',
+  'Legal & Compliance',
+  'Social Work',
+  'Teaching',
 ];
 
 export const Step1ApplicationForm: React.FC<Step1ApplicationFormProps> = ({
@@ -48,7 +66,15 @@ export const Step1ApplicationForm: React.FC<Step1ApplicationFormProps> = ({
       newErrors.education = 'Education level is required';
     }
 
-    if (formData.experienceYears === undefined || formData.experienceYears === null || isNaN(formData.experienceYears)) {
+    if (!formData.careerPath) {
+      newErrors.careerPath = 'Career path is required';
+    }
+
+    if (
+      formData.experienceYears === undefined ||
+      formData.experienceYears === null ||
+      isNaN(formData.experienceYears)
+    ) {
       newErrors.experienceYears = 'Years of experience is required';
     } else if (formData.experienceYears < 0) {
       newErrors.experienceYears = 'Years of experience cannot be negative';
@@ -189,6 +215,30 @@ export const Step1ApplicationForm: React.FC<Step1ApplicationFormProps> = ({
             )}
           </div>
 
+          {/* Career Path Dropdown (Required) */}
+          <div className="form-group">
+            <label className="form-label" htmlFor="career_path">
+              Career Path
+            </label>
+            <select
+              id="career_path"
+              name="careerPath"
+              value={formData.careerPath}
+              onChange={(e) => handleInputChange('careerPath', e.target.value as CareerPath)}
+              className={`form-select ${errors.careerPath ? 'border-red-400 ring-1 ring-red-300' : ''}`}
+              disabled={isLoading}
+            >
+              {CAREER_PATH_OPTIONS.map((path) => (
+                <option key={path} value={path}>
+                  {path}
+                </option>
+              ))}
+            </select>
+            {errors.careerPath && (
+              <p className="text-xs text-red-600 mt-1 font-medium">{errors.careerPath}</p>
+            )}
+          </div>
+
           {/* Years of Experience */}
           <div className="form-group">
             <label className="form-label" htmlFor="experience">
@@ -216,7 +266,7 @@ export const Step1ApplicationForm: React.FC<Step1ApplicationFormProps> = ({
           </div>
 
           {/* Location */}
-          <div className="form-group">
+          <div className="form-group sm:col-span-2">
             <label className="form-label" htmlFor="location">
               Location
             </label>
